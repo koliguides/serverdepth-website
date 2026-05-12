@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ServerDepth — Premium FiveM Scripts for Serious RP Servers</title>
+<meta name="description" content="ServerDepth builds the player progression, world events, justice, and economy systems QBox and QBCore servers actually need. Production Lua, modern NUI, public source.">
+<meta name="og:title" content="ServerDepth — Premium FiveM Scripts">
+<meta name="og:description" content="The four scripts that turn a generic QBox server into a deep RP world. Public source on GitHub.">
+<meta name="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #06070b;
+  --bg-elevated: #0c0e14;
+  --bg-card: #11141c;
+  --bg-card-hover: #161a24;
+  --border: #1b2030;
+  --border-strong: #2a3142;
+  --text: #f1f2f5;
+  --text-dim: #8a91a3;
+  --text-faint: #4a5063;
+  --accent: #00d4ff;
+  --accent-soft: rgba(0, 212, 255, 0.1);
+  --accent-2: #ff9900;
+  --accent-3: #2ecc71;
+  --accent-red: #ff3344;
+  --accent-purple: #a78bfa;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+}
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  font-feature-settings: 'cv11', 'ss01';
+}
+.mono { font-family: 'JetBrains Mono', monospace; }
+.container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+
+/* === Background ambient effects === */
+body::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -10%;
+  width: 80vw;
+  height: 80vh;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -30%;
+  right: -10%;
+  width: 60vw;
+  height: 60vh;
+  background: radial-gradient(circle, rgba(255, 153, 0, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+main, nav, footer { position: relative; z-index: 1; }
+
+/* === Nav === */
+nav.topnav {
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background: rgba(6, 7, 11, 0.7);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  z-index: 100;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.logo {
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text);
+}
+.logo-mark {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  font-weight: 900;
+  font-size: 14px;
+  letter-spacing: -0.04em;
+}
+.nav-links {
+  display: flex;
+  gap: 28px;
+  font-size: 14px;
+  font-weight: 500;
+  align-items: center;
+}
+.nav-links a {
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-cta {
+  background: var(--text);
+  color: var(--bg);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.nav-cta:hover { background: var(--accent); color: #000; }
+
+@media (max-width: 768px) {
+  .nav-links a:not(.nav-cta) { display: none; }
+}
+
+/* === Hero === */
+section.hero {
+  padding: 100px 0 80px;
+  position: relative;
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 6px 14px;
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  border-radius: 100px;
+  background: rgba(0, 212, 255, 0.04);
+  margin-bottom: 28px;
+  font-weight: 500;
+}
+.eyebrow-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.hero h1 {
+  font-size: clamp(44px, 7.5vw, 88px);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+  margin-bottom: 28px;
+  max-width: 16ch;
+}
+.gradient-text {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 60%, var(--accent-purple) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero .lede {
+  font-size: 20px;
+  color: var(--text-dim);
+  max-width: 620px;
+  line-height: 1.6;
+  margin-bottom: 40px;
+}
+.hero-cta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 64px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 22px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  transition: all 0.15s;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+.btn-primary {
+  background: var(--text);
+  color: var(--bg);
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  background: var(--accent);
+  color: #000;
+  box-shadow: 0 8px 24px rgba(0, 212, 255, 0.25);
+}
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+}
+.btn-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--text-dim);
+}
+.btn-ghost:hover { color: var(--text); }
+
+/* Stats row */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  padding: 32px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.stat .num {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-family: 'Inter';
+  color: var(--text);
+}
+.stat .lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+  margin-top: 4px;
+  font-weight: 500;
+}
+@media (max-width: 768px) {
+  .stats-row { grid-template-columns: 1fr 1fr; gap: 24px; }
+  .stat .num { font-size: 28px; }
+}
+
+/* === Sections === */
+section { padding: 120px 0; position: relative; }
+.section-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+.section-title {
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin-bottom: 20px;
+  max-width: 22ch;
+}
+.section-subtitle {
+  font-size: 19px;
+  color: var(--text-dim);
+  max-width: 640px;
+  line-height: 1.6;
+  margin-bottom: 64px;
+}
+
+/* === Products section === */
+.product-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 900px) {
+  .product-grid { grid-template-columns: 1fr; }
+}
+.product-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all 0.25s;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+}
+.product-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  background: var(--bg-card-hover);
+}
+.product-thumb {
+  position: relative;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  background: #000;
+}
+.product-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s;
+}
+.product-card:hover .product-thumb img {
+  transform: scale(1.04);
+}
+.product-thumb-tag {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  padding: 5px 10px;
+  background: rgba(6, 7, 11, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.product-thumb-tag.cyan { color: var(--accent); border-color: rgba(0, 212, 255, 0.3); }
+.product-thumb-tag.orange { color: var(--accent-2); border-color: rgba(255, 153, 0, 0.3); }
+.product-thumb-tag.purple { color: var(--accent-purple); border-color: rgba(167, 139, 250, 0.3); }
+.product-thumb-tag.green { color: var(--accent-3); border-color: rgba(46, 204, 113, 0.3); }
+.product-info { padding: 24px; flex: 1; display: flex; flex-direction: column; }
+.product-info h3 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.product-info p.product-desc {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+  line-height: 1.55;
+  flex: 1;
+}
+.product-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.product-price {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 18px;
+}
+.product-price .currency {
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 400;
+}
+.product-card-link {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* === Bundle section === */
+.bundle {
+  background: linear-gradient(135deg,
+    rgba(0, 212, 255, 0.06) 0%,
+    rgba(255, 153, 0, 0.04) 50%,
+    rgba(167, 139, 250, 0.06) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xl);
+  padding: 56px;
+  margin-top: 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.bundle::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.05) 0%, transparent 40%);
+  pointer-events: none;
+}
+.bundle-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+  font-weight: 500;
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 100px;
+}
+.bundle h2 {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 14px;
+}
+.bundle p {
+  font-size: 18px;
+  color: var(--text-dim);
+  max-width: 560px;
+  margin: 0 auto 32px;
+}
+.bundle-pricing {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 32px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.bundle-strike {
+  text-decoration: line-through;
+  color: var(--text-faint);
+  font-size: 18px;
+}
+.bundle-price {
+  color: var(--accent);
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.bundle-save {
+  background: var(--accent-3);
+  color: #000;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* === Product detail (anchored sections) === */
+.product-detail {
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border);
+}
+.product-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 64px;
+  align-items: center;
+}
+@media (max-width: 900px) {
+  .product-detail-grid { grid-template-columns: 1fr; gap: 32px; }
+}
+.product-detail-img {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  aspect-ratio: 16/9;
+}
+.product-detail-img img { width: 100%; height: 100%; object-fit: cover; }
+.product-detail-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+.product-detail-tag.cyan { background: rgba(0, 212, 255, 0.1); color: var(--accent); }
+.product-detail-tag.orange { background: rgba(255, 153, 0, 0.1); color: var(--accent-2); }
+.product-detail-tag.purple { background: rgba(167, 139, 250, 0.1); color: var(--accent-purple); }
+.product-detail-tag.green { background: rgba(46, 204, 113, 0.1); color: var(--accent-3); }
+.product-detail h3 {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 14px;
+}
+.product-detail .product-tagline {
+  font-size: 17px;
+  color: var(--text-dim);
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+.feature-list {
+  list-style: none;
+  margin-bottom: 32px;
+}
+.feature-list li {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.feature-list li::before {
+  content: '';
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  background: var(--accent);
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M13.5 4.5L6 12l-3.5-3.5' stroke='black' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/contain no-repeat;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M13.5 4.5L6 12l-3.5-3.5' stroke='black' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/contain no-repeat;
+  margin-top: 3px;
+}
+.tech-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.tech-badge {
+  padding: 5px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+.product-detail-cta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.product-detail-price {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 20px;
+  margin-right: 8px;
+}
+.product-detail-price .currency {
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+/* === Why pillars === */
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+@media (max-width: 768px) { .pillars { grid-template-columns: 1fr; } }
+.pillar {
+  padding: 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: border-color 0.2s;
+}
+.pillar:hover { border-color: var(--border-strong); }
+.pillar-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+.pillar h4 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+.pillar p {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+/* === Process steps === */
+.process-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  position: relative;
+}
+@media (max-width: 900px) { .process-grid { grid-template-columns: 1fr; } }
+.process-step {
+  padding: 32px;
+  position: relative;
+}
+.process-step-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 64px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1;
+  margin-bottom: 16px;
+}
+.process-step h4 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+.process-step p {
+  font-size: 15px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+/* === FAQ === */
+.faq-grid {
+  max-width: 760px;
+  margin: 0 auto;
+}
+.faq-item {
+  border-bottom: 1px solid var(--border);
+  padding: 24px 0;
+  cursor: pointer;
+}
+.faq-question {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  list-style: none;
+}
+.faq-question::-webkit-details-marker { display: none; }
+.faq-icon {
+  width: 24px; height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  color: var(--text-dim);
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-left: 16px;
+  transition: all 0.2s;
+}
+details[open] .faq-icon {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+  transform: rotate(45deg);
+}
+.faq-answer {
+  margin-top: 16px;
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 1.7;
+}
+.faq-answer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.faq-answer a:hover { text-decoration: underline; }
+
+/* === CTA === */
+.final-cta {
+  text-align: center;
+  padding: 100px 0;
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.final-cta h2 {
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin-bottom: 16px;
+}
+.final-cta p {
+  font-size: 19px;
+  color: var(--text-dim);
+  max-width: 580px;
+  margin: 0 auto 36px;
+}
+.cta-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* === Footer === */
+footer {
+  padding: 64px 0 32px;
+  border-top: 1px solid var(--border);
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 48px;
+  margin-bottom: 48px;
+}
+@media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; } }
+.footer-brand p {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-top: 16px;
+  max-width: 280px;
+  line-height: 1.6;
+}
+.footer-col h5 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+.footer-col ul { list-style: none; }
+.footer-col li { margin-bottom: 10px; }
+.footer-col a {
+  font-size: 14px;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.footer-col a:hover { color: var(--text); }
+.footer-bottom {
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  color: var(--text-faint);
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  section { padding: 80px 0; }
+  .container { padding: 0 20px; }
+  .bundle { padding: 32px 24px; }
+  .bundle h2 { font-size: 28px; }
+  .bundle-price { font-size: 36px; }
+}
+
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="#" class="logo">
+    <div class="logo-mark">S</div>
+    <span>ServerDepth</span>
+  </a>
+  <div class="nav-links">
+    <a href="#products">Products</a>
+    <a href="#bundle">Bundle</a>
+    <a href="#process">Process</a>
+    <a href="#faq">FAQ</a>
+    <a href="https://github.com/koliguides" target="_blank" rel="noopener noreferrer">GitHub</a>
+    <a href="#contact" class="nav-cta">Get In Touch</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="eyebrow">
+      <span class="eyebrow-dot"></span>
+      <span>FiveM Script Studio · Active 2026</span>
+    </div>
+    <h1>The scripts your <span class="gradient-text">QBox server</span> actually needs.</h1>
+    <p class="lede">Cross-track player reputation. Dynamic world events. A functioning courtroom. Player-owned businesses with NPC staff. Production-grade Lua. Modern NUI. Public source. Built to integrate as a system, not bolt-on noise.</p>
+    <div class="hero-cta">
+      <a class="btn btn-primary" href="#products">View Products →</a>
+      <a class="btn btn-secondary" href="#bundle">See Bundle Pricing</a>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat">
+        <div class="num">4</div>
+        <div class="lbl">Production Scripts</div>
+      </div>
+      <div class="stat">
+        <div class="num">20,000+</div>
+        <div class="lbl">Lines of Code</div>
+      </div>
+      <div class="stat">
+        <div class="num">100%</div>
+        <div class="lbl">Qbox / QBCore</div>
+      </div>
+      <div class="stat">
+        <div class="num">Public</div>
+        <div class="lbl">Source on GitHub</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS GRID -->
+<section id="products">
+  <div class="container">
+    <div class="section-eyebrow">— Products</div>
+    <h2 class="section-title">Built for depth, designed to integrate.</h2>
+    <p class="section-subtitle">Every script exposes clean exports. Buy one, drop it in, and your other scripts can hook into it. Buy them all, and they form a complete RP depth layer that no single competitor offers.</p>
+
+    <div class="product-grid">
+
+      <a href="#detail-reputation" class="product-card">
+        <div class="product-thumb">
+          <span class="product-thumb-tag cyan">Player Progression</span>
+          <img src="https://hyperagent.com/api/files/usergenerated/threads/cmolgd0r20evs07ad07tn2uxt/images/7dc56f61-a2ed-4ec1-99a9-8bf47444b6b8.png" alt="ServerDepth Reputation">
+        </div>
+        <div class="product-info">
+          <h3>ServerDepth Reputation</h3>
+          <p class="product-desc">Cross-track player reputation system. Players accumulate legal and criminal rep independently. 5 tiers per track. Exports for any other script to hook into.</p>
+          <div class="product-meta">
+            <div class="product-price">$34<span class="currency">.99</span></div>
+            <div class="product-card-link">View details →</div>
+          </div>
+        </div>
+      </a>
+
+      <a href="#detail-events" class="product-card">
+        <div class="product-thumb">
+          <span class="product-thumb-tag orange">Dynamic World</span>
+          <img src="https://hyperagent.com/api/files/usergenerated/threads/cmolgd0r20evs07ad07tn2uxt/images/41f10987-7a3c-4a96-a541-c7a467c0b6ae.png" alt="ServerDepth Events">
+        </div>
+        <div class="product-info">
+          <h3>ServerDepth Events</h3>
+          <p class="product-desc">Server-wide events that fire on a schedule and bring your map to life. Cargo Drops, Armored Truck Heists, Underground Races, Hidden Stashes. Modular registry for custom events.</p>
+          <div class="product-meta">
+            <div class="product-price">$49<span class="currency">.99</span></div>
+            <div class="product-card-link">View details →</div>
+          </div>
+        </div>
+      </a>
+
+      <a href="#detail-doj" class="product-card">
+        <div class="product-thumb">
+          <span class="product-thumb-tag purple">Justice System</span>
+          <img src="https://hyperagent.com/api/files/usergenerated/threads/cmolgd0r20evs07ad07tn2uxt/images/9dd36c93-0d03-4416-9a7d-8a14e7bf3be1.png" alt="ServerDepth DOJ">
+        </div>
+        <div class="product-info">
+          <h3>ServerDepth DOJ</h3>
+          <p class="product-desc">A functional Department of Justice. Police file cases, judges manage dockets, hearings get scheduled, verdicts execute jail time, fines, and license revocations automatically.</p>
+          <div class="product-meta">
+            <div class="product-price">$44<span class="currency">.99</span></div>
+            <div class="product-card-link">View details →</div>
+          </div>
+        </div>
+      </a>
+
+      <a href="#detail-businesses" class="product-card">
+        <div class="product-thumb">
+          <span class="product-thumb-tag green">Civilian Economy</span>
+          <img src="https://hyperagent.com/api/files/usergenerated/threads/cmolgd0r20evs07ad07tn2uxt/images/53e02ce8-f631-40ea-b19c-feaea0893d64.png" alt="ServerDepth Businesses">
+        </div>
+        <div class="product-info">
+          <h3>ServerDepth Businesses</h3>
+          <p class="product-desc">Player-owned civilian businesses with hired NPC staff. 8 business types. Passive income simulation. NPC happiness affects productivity. Customer interactions via ox_target.</p>
+          <div class="product-meta">
+            <div class="product-price">$54<span class="currency">.99</span></div>
+            <div class="product-card-link">View details →</div>
+          </div>
+        </div>
+      </a>
+
+    </div>
+
+    <!-- BUNDLE -->
+    <div class="bundle" id="bundle">
+      <div class="bundle-eyebrow">Bundle</div>
+      <h2>Server Depth Bundle</h2>
+      <p>All four scripts. Designed to integrate. Saves you 20% vs buying individually.</p>
+      <div class="bundle-pricing">
+        <span class="bundle-strike">$184.96</span>
+        <span class="bundle-price">$149</span>
+        <span class="bundle-save">SAVE 19%</span>
+      </div>
+      <a class="btn btn-primary" href="#contact">Get the Bundle →</a>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT DETAIL: REPUTATION -->
+<section id="detail-reputation" class="product-detail">
+  <div class="container">
+    <div class="product-detail-grid">
+      <div class="product-detail-img">
+        <img src="https://hyperagent.com/api/files/usergenerated/threads/cmolgd0r20evs07ad07tn2uxt/images/7dc56f61-a2ed-4ec1-99a9-8bf47444b6b8.png" alt="ServerDepth Reputation hero">
+      </div>
+      <div>
+        <span class="product-detail-tag cyan">Foundation Layer</span>
+        <h3>ServerDepth Reputation</h3>
+        <p class="product-tagline">The first cross-track reputation system for FiveM. Legal and criminal rep tracked independently. 5 tiers each. Designed to be hooked into by everything else on your server.</p>
+
+        <ul class="feature-list">
+          <li>Two independent progression tracks (legal + criminal)</li>
+          <li>5 tiers per track with configurable thresholds and unlockable perks</li>
+          <li>Server-authoritative state — clients cannot modify their own rep</li>
+          <li>Full audit log of every change with reason</li>
+          <li>30+ pre-wired event hooks (jobs, crimes, heists, hospital, police)</li>
+          <li>Clean exports: <code>GetReputation</code>, <code>GetTier</code>, <code>AddReputation</code>, <code>GetTopPlayers</code></li>
+          <li>Modern NUI panel + persistent HUD</li>
+          <li>Auto-detects QBox vs QBCore</li>
+        </ul>
+
+        <div class="tech-row">
+          <span class="tech-badge">QBox</span>
+          <span class="tech-badge">QBCore</span>
+          <span class="tech-badge">ox_lib</span>
+          <span class="tech-badge">oxmysql</span>
+          <span class="tech-badge">Lua 5.4</span>
+        </div>
+
+        <div class="product-detail-cta">
+          <span class="product-detail-price">$34<span class="currency">.99</span></span>
+          <a class="btn btn-primary" href="https://github.com/koliguides/serverdepth-reputation" target="_blank" rel="noopener noreferrer">View Source on GitHub ↗</a>
+          <a class="btn btn-secondary" href="#contact">Request Access</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT DETAIL: EVENTS -->
+<section id="detail-events" class="product-detail">
+  <div class="container">
+    <div class="product-detail-grid">
+      <div>
+        <span class="product-detail-tag orange">Server Activity</span>
+        <h3>ServerDepth Events</h3>
+        <p class="product-tagline">Server-wide events that fire on a schedule and bring your map to life. Players never know what's coming next. Modular system — add custom event types in ~50 lines.</p>
+
+        <ul class="feature-list">
+          <li>4 production event types out of the box: Cargo Drop, Armored Truck, Underground Race, Hidden Stash</li>
+          <li>Weighted random scheduler with per-event cooldowns</li>
+          <li>Admin manual triggers via <code>/trigger_event</code></li>
+          <li>Server-authoritative claim validation (anti-cheat distance checks)</li>
+          <li>Configurable reward tables (cash + items + reputation)</li>
+          <li>ox_inventory native item distribution</li>
+          <li>Police alert integration for heist-class events</li>
+          <li>Optional: criminal rep grants on event wins (via ServerDepth Reputation)</li>
+        </ul>
+
+        <div class="tech-row">
+          <span class="tech-badge">QBox</span>
+          <span class="tech-badge">QBCore</span>
+          <span class="tech-badge">ox_inventory</span>
+          <span class="tech-badge">ox_lib</span>
+          <span class="tech-badge">oxmysql</span>
+        </div>
+
+        <div class="product-detail-cta">
+          <span class="product-detail-price">$49<span class="currency">.99</span></span>
+          <a class="btn btn-primary" href="https://github.com/koliguides/serverdepth-events" target="_blank" rel="noopener noreferrer">View Source on GitHub ↗</a>
+          <a class="btn btn-secondary" href="#contact">Request Access</a>
+        </div>
+      </div>
+      <div class="product-detail-img">
+        <img src="https://hyperagent.com/api/files/usergenerated/threads/cmolgd0r20evs07ad07tn2uxt/images/41f10987-7a3c-4a96-a541-c7a467c0b6ae.png" alt="ServerDepth Events hero">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT DETAIL: DOJ -->
+<section id="detail-doj" class="product-detail">
+  <div class="container">
+    <div class="product-detail-grid">
+      <div class="product-detail-img">
+        <img src="https://hyperagent.com/api/files/usergenerated/threads/cmolgd0r20evs07ad07tn2uxt/images/9dd36c93-0d03-4416-9a7d-8a14e7bf3be1.png" alt="ServerDepth DOJ hero">
+      </div>
+      <div>
+        <span class="product-detail-tag purple">Legal Layer</span>
+        <h3>ServerDepth DOJ</h3>
+        <p class="product-tagline">A functional Department of Justice. Police file cases. Judges manage dockets and schedule hearings. Verdicts execute consequences automatically.</p>
+
+        <ul class="feature-list">
+          <li>30-charge catalog with severity tiers and sentence ranges</li>
+          <li>Police / prosecutor case filing with evidence + arresting officer</li>
+          <li>Judge docket queue + hearing scheduling with party notifications</li>
+          <li>Verdict execution: jail time, fines, license revocations all automatic</li>
+          <li>Plea deals + motions to dismiss</li>
+          <li>Public conviction records (criminal record lookup)</li>
+          <li>Optional: criminal rep tier modifies bail amounts and sentencing</li>
+          <li>Defense attorney role with case acceptance + dismissal motions</li>
+        </ul>
+
+        <div class="tech-row">
+          <span class="tech-badge">QBox</span>
+          <span class="tech-badge">QBCore</span>
+          <span class="tech-badge">ox_lib</span>
+          <span class="tech-badge">oxmysql</span>
+          <span class="tech-badge">Discord webhooks</span>
+        </div>
+
+        <div class="product-detail-cta">
+          <span class="product-detail-price">$44<span class="currency">.99</span></span>
+          <a class="btn btn-primary" href="https://github.com/koliguides/serverdepth-doj" target="_blank" rel="noopener noreferrer">View Source on GitHub ↗</a>
+          <a class="btn btn-secondary" href="#contact">Request Access</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT DETAIL: BUSINESSES -->
+<section id="detail-businesses" class="product-detail">
+  <div class="container">
+    <div class="product-detail-grid">
+      <div>
+        <span class="product-detail-tag green">Economy Layer</span>
+        <h3>ServerDepth Businesses</h3>
+        <p class="product-tagline">Player-owned civilian businesses with hired NPC staff. 8 business types. Passive income that runs whether the owner is online or not. The "boring civilian jobs" problem, solved.</p>
+
+        <ul class="feature-list">
+          <li>8 business types: bar, car wash, tattoo parlor, garage, food stand, laundromat, clothing store, convenience store</li>
+          <li>Hire and fire NPC staff with role-based wages</li>
+          <li>NPC happiness affects business productivity</li>
+          <li>Server-authoritative income simulation with realistic variance</li>
+          <li>Customer interactions via ox_target (tattoos, repairs, sales, washes)</li>
+          <li>Optional: legal reputation tier grants customer discounts</li>
+          <li>Full owner dashboard with 7-day income chart</li>
+          <li>P2P business sales + 3 upgrade tiers</li>
+        </ul>
+
+        <div class="tech-row">
+          <span class="tech-badge">QBox</span>
+          <span class="tech-badge">QBCore</span>
+          <span class="tech-badge">ox_inventory</span>
+          <span class="tech-badge">ox_target</span>
+          <span class="tech-badge">Chart.js</span>
+        </div>
+
+        <div class="product-detail-cta">
+          <span class="product-detail-price">$54<span class="currency">.99</span></span>
+          <a class="btn btn-primary" href="https://github.com/koliguides/serverdepth-businesses" target="_blank" rel="noopener noreferrer">View Source on GitHub ↗</a>
+          <a class="btn btn-secondary" href="#contact">Request Access</a>
+        </div>
+      </div>
+      <div class="product-detail-img">
+        <img src="https://hyperagent.com/api/files/usergenerated/threads/cmolgd0r20evs07ad07tn2uxt/images/53e02ce8-f631-40ea-b19c-feaea0893d64.png" alt="ServerDepth Businesses hero">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section id="why">
+  <div class="container">
+    <div class="section-eyebrow">— Why ServerDepth</div>
+    <h2 class="section-title">Built for the servers that take RP seriously.</h2>
+    <p class="section-subtitle">Most FiveM scripts target the obvious: crime and police. The civilian half of roleplay — citizen progression, dynamic world events, the systems that make a server feel alive — has been systematically underbuilt. We focus there.</p>
+
+    <div class="pillars">
+      <div class="pillar">
+        <div class="pillar-num">01</div>
+        <h4>QBox-native, QBCore-compatible</h4>
+        <p>Targeted at the framework new servers are launching on in 2026. Auto-detection at startup means it works on both without manual flags.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">02</div>
+        <h4>Built to integrate</h4>
+        <p>Every script exposes proper exports so other resources — yours or ours — can build on top. No vendor lock-in. No "you have to buy our whole pack" trick.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">03</div>
+        <h4>Server-authoritative</h4>
+        <p>All state changes, claim validation, and reward distribution happen server-side. No client-side trust. No exploit surface from packet manipulation.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">04</div>
+        <h4>Documented, not obfuscated</h4>
+        <p>Source is unobfuscated. READMEs cover installation, configuration, and every export with code examples. Your devs can audit it, extend it, modify it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process" class="product-detail">
+  <div class="container">
+    <div class="section-eyebrow">— How It Works</div>
+    <h2 class="section-title">From DM to deployed in a weekend.</h2>
+    <p class="section-subtitle">No demo gating. No 2-week trial loops. We work with serious server owners who want to evaluate the source before they buy.</p>
+
+    <div class="process-grid">
+      <div class="process-step">
+        <div class="process-step-num">01</div>
+        <h4>Browse the source</h4>
+        <p>All four scripts are public on GitHub. Read the code. Browse the README. Check the file structure. No gated demos.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-step-num">02</div>
+        <h4>DM for access</h4>
+        <p>Tell us about your server. Which framework, what player count, what you're missing. We send purchase links or a Tebex invite for the package you want.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-step-num">03</div>
+        <h4>Install + integrate</h4>
+        <p>Drop the resource into your server, import the SQL, configure to taste, restart. Support via Discord and GitHub issues. Bug fixes shipped on the same day they're reported.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="container">
+    <div class="section-eyebrow">— FAQ</div>
+    <h2 class="section-title" style="margin-bottom: 64px;">Common questions, answered.</h2>
+
+    <div class="faq-grid">
+      <details class="faq-item">
+        <summary class="faq-question">
+          <span>What FiveM framework do these scripts target?</span>
+          <span class="faq-icon">+</span>
+        </summary>
+        <div class="faq-answer">
+          QBox is the primary target. QBCore is supported as a fallback via auto-detection at startup. The scripts use ox_lib + oxmysql universally and ox_inventory where item handling is needed. No script requires our other scripts to run — they're all standalone, with optional integration if you own multiple.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">
+          <span>Will my server need code changes to install these?</span>
+          <span class="faq-icon">+</span>
+        </summary>
+        <div class="faq-answer">
+          No. Each script is a self-contained resource. Drop into your <code>resources/</code> folder, add <code>ensure</code> lines to <code>server.cfg</code>, import the SQL, restart. Configuration is done via the <code>config.lua</code> in each resource — no code changes needed.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">
+          <span>Is the source obfuscated?</span>
+          <span class="faq-icon">+</span>
+        </summary>
+        <div class="faq-answer">
+          No. All source is plain Lua, well-commented, and public on GitHub. Your developers can audit it, extend it, and modify it for your server's specific needs.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">
+          <span>How does the integration between scripts work?</span>
+          <span class="faq-icon">+</span>
+        </summary>
+        <div class="faq-answer">
+          Every script exposes FiveM <code>exports</code> that other resources can call. Reputation exposes <code>AddReputation</code>, <code>GetTier</code>, etc. Events optionally grants criminal rep on wins. DOJ optionally uses reputation tier to modify bail and sentencing. Businesses optionally applies legal-rep-tier discounts to customers. Each integration is wrapped in <code>pcall</code> so missing dependencies never crash anything.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">
+          <span>Can I try a script before paying?</span>
+          <span class="faq-icon">+</span>
+        </summary>
+        <div class="faq-answer">
+          The source is already public on GitHub — read it, audit it, understand exactly what you're buying before purchase. For serious server owners we also offer evaluation copies on request via Discord or email.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">
+          <span>What's your license / can I resell?</span>
+          <span class="faq-icon">+</span>
+        </summary>
+        <div class="faq-answer">
+          Single-server use. Each license covers one production FiveM server. Reselling, redistributing, or modifying for resale is not permitted. Lifetime updates are included for original purchasers — no monthly fees.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">
+          <span>How do you handle bug reports and support?</span>
+          <span class="faq-icon">+</span>
+        </summary>
+        <div class="faq-answer">
+          GitHub issues on the public repos for tracking. Discord for live discussion. Bug fixes are typically shipped the same day they're reported, especially for paying customers.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">
+          <span>Are you offering custom development?</span>
+          <span class="faq-icon">+</span>
+        </summary>
+        <div class="faq-answer">
+          For serious servers — yes. <a href="#contact">Contact us</a> with what you're building and we'll discuss scope, timeline, and rates.
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta" id="contact">
+  <div class="container">
+    <div class="section-eyebrow">— Get In Touch</div>
+    <h2>Ready to add some depth?</h2>
+    <p>Browse the source. Audit the code. Then drop us a line — we'll get you set up with whichever scripts (or the full bundle) fit your server.</p>
+    <div class="cta-buttons">
+      <a class="btn btn-primary" href="mailto:hello@serverdepth.io">hello@serverdepth.io →</a>
+      <a class="btn btn-secondary" href="https://discord.gg/serverdepth" target="_blank" rel="noopener noreferrer">Join Discord</a>
+      <a class="btn btn-ghost" href="https://github.com/koliguides" target="_blank" rel="noopener noreferrer">Browse GitHub</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#" class="logo">
+          <div class="logo-mark">S</div>
+          <span>ServerDepth</span>
+        </a>
+        <p>Premium FiveM scripts for QBox and QBCore servers that take roleplay seriously. Built to integrate.</p>
+      </div>
+
+      <div class="footer-col">
+        <h5>Products</h5>
+        <ul>
+          <li><a href="#detail-reputation">Reputation</a></li>
+          <li><a href="#detail-events">Events</a></li>
+          <li><a href="#detail-doj">DOJ</a></li>
+          <li><a href="#detail-businesses">Businesses</a></li>
+          <li><a href="#bundle">Server Depth Bundle</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h5>Resources</h5>
+        <ul>
+          <li><a href="https://github.com/koliguides" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#process">How It Works</a></li>
+          <li><a href="#contact">Support</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h5>Contact</h5>
+        <ul>
+          <li><a href="mailto:hello@serverdepth.io">hello@serverdepth.io</a></li>
+          <li><a href="https://discord.gg/serverdepth" target="_blank" rel="noopener noreferrer">Discord</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>© 2026 ServerDepth. Built for FiveM. Not affiliated with Rockstar Games or Take-Two Interactive.</div>
+      <div class="mono">v1.0.0 · Status: All systems operational</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Smooth scroll for in-page anchors
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// FAQ accordion — close others when opening one
+document.querySelectorAll('details.faq-item').forEach(details => {
+  details.addEventListener('toggle', () => {
+    if (details.open) {
+      document.querySelectorAll('details.faq-item').forEach(other => {
+        if (other !== details) other.open = false;
+      });
+    }
+  });
+});
+</script>
+
+</body>
+</html>
