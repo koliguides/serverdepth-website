@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="sd-top" x1="0" y1="0" x2="22" y2="6" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="sd-mid" x1="0" y1="0" x2="22" y2="6" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f472b6"/>
+      <stop offset="100%" stop-color="#c026d3"/>
+    </linearGradient>
+    <linearGradient id="sd-bot" x1="0" y1="0" x2="22" y2="6" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="5" width="22" height="6" rx="1.5" fill="url(#sd-top)"/>
+  <rect x="5" y="13" width="22" height="6" rx="1.5" fill="url(#sd-mid)"/>
+  <rect x="8" y="21" width="22" height="6" rx="1.5" fill="url(#sd-bot)"/>
+</svg>
